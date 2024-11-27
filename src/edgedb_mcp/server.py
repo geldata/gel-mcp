@@ -6,10 +6,18 @@ from mcp.server import NotificationOptions, Server
 from pydantic import AnyUrl
 import mcp.server.stdio
 
-# Store notes as a simple key-value dict to demonstrate state management
-notes: dict[str, str] = {}
+import edgedb
+from jinja2 import Template
+import json
+
+transaction_options = edgedb.TransactionOptions(readonly=False)
+edgedb_client = edgedb.create_async_client().with_transaction_options(
+    transaction_options
+)
+
 
 server = Server("edgedb-mcp")
+
 
 @server.list_resources()
 async def handle_list_resources() -> list[types.Resource]:
@@ -17,15 +25,30 @@ async def handle_list_resources() -> list[types.Resource]:
     List available note resources.
     Each note is exposed as a resource with a custom note:// URI scheme.
     """
+
+    type_names_query = """
+        with module schema,
+            types := (
+                select ObjectType { name }
+                filter .name like 'default::%'
+            )
+        select types.name;
+        """
+
+    async for tx in edgedb_client.transaction():
+        async with tx:
+            db_types = await tx.query_json(type_names_query)
+
     return [
         types.Resource(
-            uri=AnyUrl(f"note://internal/{name}"),
-            name=f"Note: {name}",
-            description=f"A simple note named {name}",
-            mimeType="text/plain",
+            uri=AnyUrl(f"schema://{db_type}"),
+            name=f"Type: {db_type}",
+            description=f"Schema for {db_type} type",
+            mimeType="application/json",
         )
-        for name in notes
+        for db_type in db_types
     ]
+
 
 @server.read_resource()
 async def handle_read_resource(uri: AnyUrl) -> str:
@@ -33,65 +56,37 @@ async def handle_read_resource(uri: AnyUrl) -> str:
     Read a specific note's content by its URI.
     The note name is extracted from the URI host component.
     """
-    if uri.scheme != "note":
+
+    if uri.scheme != "schema":
         raise ValueError(f"Unsupported URI scheme: {uri.scheme}")
 
-    name = uri.path
-    if name is not None:
-        name = name.lstrip("/")
-        return notes[name]
-    raise ValueError(f"Note not found: {name}")
+    db_type = uri.path
 
-@server.list_prompts()
-async def handle_list_prompts() -> list[types.Prompt]:
-    """
-    List available prompts.
-    Each prompt can have optional arguments to customize its behavior.
-    """
-    return [
-        types.Prompt(
-            name="summarize-notes",
-            description="Creates a summary of all notes",
-            arguments=[
-                types.PromptArgument(
-                    name="style",
-                    description="Style of the summary (brief/detailed)",
-                    required=False,
-                )
-            ],
-        )
-    ]
+    type_query = Template("""
+        select (introspect {{ type }}) {
+          name,
+          properties: {
+            name,
+            target: {
+              name
+            }
+          },
+          links: {
+            name,
+            target: {
+              name
+            }
+          }
+        };
+    """)
 
-@server.get_prompt()
-async def handle_get_prompt(
-    name: str, arguments: dict[str, str] | None
-) -> types.GetPromptResult:
-    """
-    Generate a prompt by combining arguments with server state.
-    The prompt includes all current notes and can be customized via arguments.
-    """
-    if name != "summarize-notes":
-        raise ValueError(f"Unknown prompt: {name}")
+    async for tx in edgedb_client.transaction():
+        async with tx:
+            db_type = db_type.lstrip("/")
+            db_type_info = await tx.query_json(type_query.render({"type": db_type}))
 
-    style = (arguments or {}).get("style", "brief")
-    detail_prompt = " Give extensive details." if style == "detailed" else ""
+    return db_type_info
 
-    return types.GetPromptResult(
-        description="Summarize the current notes",
-        messages=[
-            types.PromptMessage(
-                role="user",
-                content=types.TextContent(
-                    type="text",
-                    text=f"Here are the current notes to summarize:{detail_prompt}\n\n"
-                    + "\n".join(
-                        f"- {name}: {content}"
-                        for name, content in notes.items()
-                    ),
-                ),
-            )
-        ],
-    )
 
 @server.list_tools()
 async def handle_list_tools() -> list[types.Tool]:
@@ -99,20 +94,21 @@ async def handle_list_tools() -> list[types.Tool]:
     List available tools.
     Each tool specifies its arguments using JSON Schema validation.
     """
+
     return [
         types.Tool(
-            name="add-note",
-            description="Add a new note",
+            name="query",
+            description="Run a read-only EdgeQL query",
             inputSchema={
                 "type": "object",
                 "properties": {
-                    "name": {"type": "string"},
-                    "content": {"type": "string"},
+                    "edgeql": {"type": "string"},
                 },
-                "required": ["name", "content"],
+                "required": ["edgeql"],
             },
         )
     ]
+
 
 @server.call_tool()
 async def handle_call_tool(
@@ -122,20 +118,21 @@ async def handle_call_tool(
     Handle tool execution requests.
     Tools can modify server state and notify clients of changes.
     """
-    if name != "add-note":
+
+    if name != "query":
         raise ValueError(f"Unknown tool: {name}")
 
     if not arguments:
         raise ValueError("Missing arguments")
 
-    note_name = arguments.get("name")
-    content = arguments.get("content")
+    edgeql_query = arguments.get("edgeql")
 
-    if not note_name or not content:
-        raise ValueError("Missing name or content")
+    if not edgeql_query:
+        raise ValueError("Missing EdgeQL query")
 
-    # Update server state
-    notes[note_name] = content
+    async for tx in edgedb_client.transaction():
+        async with tx:
+            response = await tx.query_json(edgeql_query)
 
     # Notify clients that resources have changed
     await server.request_context.session.send_resource_list_changed()
@@ -143,9 +140,10 @@ async def handle_call_tool(
     return [
         types.TextContent(
             type="text",
-            text=f"Added note '{note_name}' with content: {content}",
+            text=f"{json.dumps(response)}",
         )
     ]
+
 
 async def main():
     # Run the server using stdin/stdout streams
