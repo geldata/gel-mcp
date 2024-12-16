@@ -26,28 +26,39 @@ async def handle_list_resources() -> list[types.Resource]:
     Each note is exposed as a resource with a custom note:// URI scheme.
     """
 
-    type_names_query = """
-        with module schema,
-            types := (
-                select ObjectType { name }
-                filter .name like 'default::%'
-            )
-        select types.name;
-        """
-
     async for tx in edgedb_client.transaction():
         async with tx:
-            db_types = await tx.query_json(type_names_query)
+            db_types = await tx.query_json(
+                """
+                with module schema,
+                    types := (
+                        select ObjectType { name }
+                        filter .name like 'default::%'
+                        )
+                select types.name;
+                """
+            )
 
-    return [
+    module_resources = [
         types.Resource(
-            uri=AnyUrl(f"schema://{db_type}"),
+            uri=AnyUrl("module://default"),
+            name="Module: default",
+            description="Schema for the entire default module",
+            mimeType="application/json",
+        )
+    ]
+
+    type_resources = [
+        types.Resource(
+            uri=AnyUrl(f"type://{db_type.replace('::', '/')}"),
             name=f"Type: {db_type}",
             description=f"Schema for {db_type} type",
             mimeType="application/json",
         )
-        for db_type in db_types
+        for db_type in json.loads(db_types)
     ]
+
+    return module_resources + type_resources
 
 
 @server.read_resource()
@@ -57,35 +68,40 @@ async def handle_read_resource(uri: AnyUrl) -> str:
     The note name is extracted from the URI host component.
     """
 
-    if uri.scheme != "schema":
+    if uri.scheme == "module":
+        query = """
+            describe module default as sdl;
+        """
+
+    elif uri.scheme == "type":
+        db_type = uri.path
+        db_type = db_type.lstrip("/")
+
+        query = Template("""
+            select (introspect {{ type }}) {
+              name,
+              properties: {
+                name,
+                target: {
+                  name
+                }
+              },
+              links: {
+                name,
+                target: {
+                  name
+                }
+              }
+            };
+        """).render({"type": db_type})
+    else:
         raise ValueError(f"Unsupported URI scheme: {uri.scheme}")
-
-    db_type = uri.path
-
-    type_query = Template("""
-        select (introspect {{ type }}) {
-          name,
-          properties: {
-            name,
-            target: {
-              name
-            }
-          },
-          links: {
-            name,
-            target: {
-              name
-            }
-          }
-        };
-    """)
 
     async for tx in edgedb_client.transaction():
         async with tx:
-            db_type = db_type.lstrip("/")
-            db_type_info = await tx.query_json(type_query.render({"type": db_type}))
+            schema = await tx.query_json(query)
 
-    return db_type_info
+    return schema
 
 
 @server.list_tools()
