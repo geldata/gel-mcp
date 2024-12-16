@@ -22,8 +22,9 @@ server = Server("edgedb-mcp")
 @server.list_resources()
 async def handle_list_resources() -> list[types.Resource]:
     """
-    List available note resources.
-    Each note is exposed as a resource with a custom note:// URI scheme.
+    List available schema resources.
+    Those include the default module and all of the object types within it.
+    Resouces are exposed via custom URIs like module://default and type:://default/Product.
     """
 
     async for tx in edgedb_client.transaction():
@@ -64,8 +65,7 @@ async def handle_list_resources() -> list[types.Resource]:
 @server.read_resource()
 async def handle_read_resource(uri: AnyUrl) -> str:
     """
-    Read a specific note's content by its URI.
-    The note name is extracted from the URI host component.
+    Introspect the default module or a particular type given its URI.
     """
 
     if uri.scheme == "module":
