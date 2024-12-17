@@ -46,14 +46,26 @@ Note that Claude is also capable of writing and executing introspection queries 
 
 To use this server with the Claude Desktop app, add the following configuration to the "mcpServers" section of your claude_desktop_config.json:
 
+```json
 {
-  "mcpServers": {
-    "edgedb": {
+    "mcpServers": {
+      "edgedb": {
+          "command": "uvx",
+          "args": ["edgedb-mcp"],
+          "env": {
+              "EDGEDB_DSN": "edgedb://user:pass@host:port/branch"
+          }
+        }
     }
-  }
 }
+```
 
-For more information about connection strings see
+The file itself can be located in the settings menu or in these directories:
+
+- On MacOS: `~/Library/Application\ Support/Claude/claude_desktop_config.json`
+- On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
+
+For more information about connection strings see [DSN specification](https://docs.edgedb.com/database/reference/dsn) in EdgeDB's docs.
 
 ## Quickstart
 
@@ -61,51 +73,28 @@ For more information about connection strings see
 
 #### Claude Desktop
 
-On MacOS: `~/Library/Application\ Support/Claude/claude_desktop_config.json`
-On Windows: `%APPDATA%/Claude/claude_desktop_config.json`
-
-<details>
-  <summary>Development/Unpublished Servers Configuration</summary>
-  ```
-  "mcpServers": {
-    "edgedb-mcp": {
-      "command": "uv",
-      "args": [
-        "--directory",
-        "/Users/andrey/local/projects/mcp_server_built/edgedb-mcp",
-        "run",
-        "edgedb-mcp"
-      ]
-    }
-  }
-  ```
-</details>
-
-<details>
-  <summary>Published Servers Configuration</summary>
-  ```
-  "mcpServers": {
-    "edgedb-mcp": {
-      "command": "uvx",
-      "args": [
-        "edgedb-mcp"
-      ]
-    }
-  }
-  ```
-</details>
 
 ## Development
 
+In order to set up the dev environment, begin by cloning the repo:
+
+```bash
+git clone https://github.com/edgedb/edgedb-mcp.git
+```
+
+... and running `uv sync`:
+
+```bash
+cd edgedb_mcp && uv sync
+```
+
 Since MCP servers run over stdio, debugging can be challenging. For the best debugging
 experience, we strongly recommend using the [MCP Inspector](https://github.com/modelcontextprotocol/inspector).
-
 
 You can launch the MCP Inspector via [`npm`](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) with this command:
 
 ```bash
 npx @modelcontextprotocol/inspector uv --directory /Users/andrey/local/projects/mcp_server_built/edgedb-mcp run edgedb-mcp
 ```
-
 
 Upon launching, the Inspector will display a URL that you can access in your browser to begin debugging.
