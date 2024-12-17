@@ -67,13 +67,6 @@ The file itself can be located in the settings menu or in these directories:
 
 For more information about connection strings see [DSN specification](https://docs.edgedb.com/database/reference/dsn) in EdgeDB's docs.
 
-## Quickstart
-
-### Install
-
-#### Claude Desktop
-
-
 ## Development
 
 In order to set up the dev environment, begin by cloning the repo:
