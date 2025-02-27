@@ -1,22 +1,20 @@
-import asyncio
-
 from mcp.server.models import InitializationOptions
 import mcp.types as types
 from mcp.server import NotificationOptions, Server
 from pydantic import AnyUrl
 import mcp.server.stdio
 
-import edgedb
+import gel
 from jinja2 import Template
 import json
 
-transaction_options = edgedb.TransactionOptions(readonly=False)
-edgedb_client = edgedb.create_async_client().with_transaction_options(
+transaction_options = gel.TransactionOptions(readonly=False)
+gel_client = gel.create_async_client().with_transaction_options(
     transaction_options
 )
 
 
-server = Server("edgedb-mcp")
+server = Server("gel-mcp")
 
 
 @server.list_resources()
@@ -27,7 +25,7 @@ async def handle_list_resources() -> list[types.Resource]:
     Resouces are exposed via custom URIs like module://default and type:://default/Product.
     """
 
-    async for tx in edgedb_client.transaction():
+    async for tx in gel_client.transaction():
         async with tx:
             db_types = await tx.query_json(
                 """
@@ -97,7 +95,7 @@ async def handle_read_resource(uri: AnyUrl) -> str:
     else:
         raise ValueError(f"Unsupported URI scheme: {uri.scheme}")
 
-    async for tx in edgedb_client.transaction():
+    async for tx in gel_client.transaction():
         async with tx:
             schema = await tx.query_json(query)
 
@@ -146,7 +144,7 @@ async def handle_call_tool(
     if not edgeql_query:
         raise ValueError("Missing EdgeQL query")
 
-    async for tx in edgedb_client.transaction():
+    async for tx in gel_client.transaction():
         async with tx:
             response = await tx.query_json(edgeql_query)
 
@@ -168,7 +166,7 @@ async def main():
             read_stream,
             write_stream,
             InitializationOptions(
-                server_name="edgedb-mcp",
+                server_name="gel-mcp",
                 server_version="0.1.0",
                 capabilities=server.get_capabilities(
                     notification_options=NotificationOptions(),

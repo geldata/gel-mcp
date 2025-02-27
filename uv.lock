@@ -37,7 +37,7 @@ name = "click"
 version = "8.1.7"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "colorama", marker = "platform_system == 'Windows'" },
+    { name = "colorama", marker = "sys_platform == 'win32'" },
 ]
 sdist = { url = "https://files.pythonhosted.org/packages/96/d3/f04c7bfcf5c1862a2a5b845c6b2b360488cf47af55dfa79c98f6a6bf98b5/click-8.1.7.tar.gz", hash = "sha256:ca9853ad459e787e2192211578cc907e7594e294c7ccc834310722b41b9ca6de", size = 336121 }
 wheels = [
@@ -54,29 +54,36 @@ wheels = [
 ]
 
 [[package]]
-name = "edgedb"
-version = "2.2.0"
+name = "gel"
+version = "3.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "certifi", marker = "platform_system == 'Windows'" },
+    { name = "certifi", marker = "sys_platform == 'win32'" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/b7/bd/5fa8967755ec169d07b4e52684897a612bebb3d2086d2eade79c33642630/edgedb-2.2.0.tar.gz", hash = "sha256:3ddbb841fe80d25ede524535dd52878cf74adae8c920e1f5dd912cddf66fe5f8", size = 1276984 }
+sdist = { url = "https://files.pythonhosted.org/packages/a4/b5/d653f4543ea717340fa27ed6a0b8ecb6c6a8b9d7330aa80f81a807e91025/gel-3.0.0.tar.gz", hash = "sha256:53da5f05e5048aa589a392ff3090ce9907c0143182b388e75a38c3f67d91128c", size = 1316200 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/ed/3b/8057113d8cec8dda9ca292b36072ad629aed0a3625b65d0d38b39571e5f5/gel-3.0.0-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:3f47a2eb02c573f7d2a35be2b6527a7f2b04c6a379a37dcbf4e9daf857f5f01e", size = 2121843 },
+    { url = "https://files.pythonhosted.org/packages/5a/02/57affe5454c5cfe8bc1444d5dc1620d4c99ab45abde7e411d8b248d526da/gel-3.0.0-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:f9ff4621a1fe7a5c6470d8ac427bce011b44afda5ecae991eb19c85bb8197385", size = 2078392 },
+    { url = "https://files.pythonhosted.org/packages/cf/f7/76dda7ffeaf3092e9aa41f2ae7566e5f54e8272274d28b3b54e809c6fabf/gel-3.0.0-cp313-cp313-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:71512a7bbc1295cef590ea8f4eeb8d12168b349f58a9481a1765275474228e33", size = 5780173 },
+    { url = "https://files.pythonhosted.org/packages/22/f0/db0dc0321e07dcec5404c2a10f0cbd82ee6ad8bb72bf776ec8293da3da92/gel-3.0.0-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:b82c2d178b244852ea417d52d4df99282c35fddc64088bf2b9dfaf9e3746c183", size = 5886477 },
+    { url = "https://files.pythonhosted.org/packages/6b/8f/45f3bb7d0ca534bf22959ecd63e8853986afb64ddae3eb5a4fe7b4a1ef1c/gel-3.0.0-cp313-cp313-win_amd64.whl", hash = "sha256:97fcfd07dc42094d0c2eac09413cd55589703fbbf5b3f78263d770ebf6b0ed0e", size = 2048336 },
+]
 
 [[package]]
-name = "edgedb-mcp"
+name = "gel-mcp"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
-    { name = "edgedb" },
+    { name = "gel" },
     { name = "jinja2" },
     { name = "mcp" },
 ]
 
 [package.metadata]
 requires-dist = [
-    { name = "edgedb", specifier = ">=2.2.0" },
+    { name = "gel", specifier = ">=3.0.0" },
     { name = "jinja2", specifier = ">=3.1.4" },
-    { name = "mcp", specifier = ">=1.0.0" },
+    { name = "mcp", specifier = ">=1.3.0" },
 ]
 
 [[package]]
@@ -177,19 +184,21 @@ wheels = [
 
 [[package]]
 name = "mcp"
-version = "1.0.0"
+version = "1.3.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
     { name = "httpx" },
     { name = "httpx-sse" },
     { name = "pydantic" },
+    { name = "pydantic-settings" },
     { name = "sse-starlette" },
     { name = "starlette" },
+    { name = "uvicorn" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/97/de/a9ec0a1b6439f90ea59f89004bb2e7ec6890dfaeef809751d9e6577dca7e/mcp-1.0.0.tar.gz", hash = "sha256:dba51ce0b5c6a80e25576f606760c49a91ee90210fed805b530ca165d3bbc9b7", size = 82891 }
+sdist = { url = "https://files.pythonhosted.org/packages/6b/b6/81e5f2490290351fc97bf46c24ff935128cb7d34d68e3987b522f26f7ada/mcp-1.3.0.tar.gz", hash = "sha256:f409ae4482ce9d53e7ac03f3f7808bcab735bdfc0fba937453782efb43882d45", size = 150235 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/56/89/900c0c8445ec001d3725e475fc553b0feb2e8a51be018f3bb7de51e683db/mcp-1.0.0-py3-none-any.whl", hash = "sha256:bbe70ffa3341cd4da78b5eb504958355c68381fb29971471cea1e642a2af5b8a", size = 36361 },
+    { url = "https://files.pythonhosted.org/packages/d0/d2/a9e87b506b2094f5aa9becc1af5178842701b27217fa43877353da2577e3/mcp-1.3.0-py3-none-any.whl", hash = "sha256:2829d67ce339a249f803f22eba5e90385eafcac45c94b00cab6cef7e8f217211", size = 70672 },
 ]
 
 [[package]]
@@ -229,6 +238,28 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/78/d8/c080592d80edd3441ab7f88f865f51dae94a157fc64283c680e9f32cf6da/pydantic_core-2.27.1-cp313-none-win32.whl", hash = "sha256:8065914ff79f7eab1599bd80406681f0ad08f8e47c880f17b416c9f8f7a26d05", size = 1833713 },
     { url = "https://files.pythonhosted.org/packages/83/84/5ab82a9ee2538ac95a66e51f6838d6aba6e0a03a42aa185ad2fe404a4e8f/pydantic_core-2.27.1-cp313-none-win_amd64.whl", hash = "sha256:ba630d5e3db74c79300d9a5bdaaf6200172b107f263c98a0539eeecb857b2337", size = 1987897 },
     { url = "https://files.pythonhosted.org/packages/df/c3/b15fb833926d91d982fde29c0624c9f225da743c7af801dace0d4e187e71/pydantic_core-2.27.1-cp313-none-win_arm64.whl", hash = "sha256:45cf8588c066860b623cd11c4ba687f8d7175d5f7ef65f7129df8a394c502de5", size = 1882983 },
+]
+
+[[package]]
+name = "pydantic-settings"
+version = "2.8.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "pydantic" },
+    { name = "python-dotenv" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ca/a2/ad2511ede77bb424f3939e5148a56d968cdc6b1462620d24b2a1f4ab65b4/pydantic_settings-2.8.0.tar.gz", hash = "sha256:88e2ca28f6e68ea102c99c3c401d6c9078e68a5df600e97b43891c34e089500a", size = 83347 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c1/a9/3b9642025174bbe67e900785fb99c9bfe91ea584b0b7126ff99945c24a0e/pydantic_settings-2.8.0-py3-none-any.whl", hash = "sha256:c782c7dc3fb40e97b238e713c25d26f64314aece2e91abcff592fcac15f71820", size = 30746 },
+]
+
+[[package]]
+name = "python-dotenv"
+version = "1.0.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/bc/57/e84d88dfe0aec03b7a2d4327012c1627ab5f03652216c63d49846d7a6c58/python-dotenv-1.0.1.tar.gz", hash = "sha256:e324ee90a023d808f1959c46bcbc04446a10ced277783dc6ee09987c37ec10ca", size = 39115 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/6a/3e/b68c118422ec867fa7ab88444e1274aa40681c606d59ac27de5a5588f082/python_dotenv-1.0.1-py3-none-any.whl", hash = "sha256:f7b63ef50f1b690dddf550d03497b66d609393b40b564ed0d674909a68ebf16a", size = 19863 },
 ]
 
 [[package]]

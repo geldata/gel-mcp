@@ -1,21 +1,21 @@
 [project]
-name = "edgedb-mcp"
+name = "gel-mcp"
 version = "0.1.0"
-description = "Model Context Protocol server that provides access to EdgeDB"
+description = "Model Context Protocol server that provides access to Gel"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
- "edgedb>=2.2.0",
+ "gel>=3.0.0",
  "jinja2>=3.1.4",
- "mcp>=1.0.0",
+ "mcp>=1.3.0",
 ]
 [[project.authors]]
 name = "deepbuzin"
-email = "contactbuzin@gmail.com"
+email = "andrey@geldata.com"
 
 [build-system]
 requires = [ "hatchling",]
 build-backend = "hatchling.build"
 
 [project.scripts]
-edgedb-mcp = "edgedb_mcp:main"
+gel-mcp = "gel_mcp:main"
