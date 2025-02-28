@@ -60,6 +60,9 @@ To use this server with the Claude Desktop app, add the following configuration 
 }
 ```
 
+Note: on local, it needs DSN acquired via `gel instance credentials --insecure-dsn` and `?tls_security=insecure` at the end.
+
+
 The file itself can be located in the settings menu or in these directories:
 
 - On MacOS: `~/Library/Application\ Support/Claude/claude_desktop_config.json`
