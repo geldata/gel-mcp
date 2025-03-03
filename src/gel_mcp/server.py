@@ -19,3 +19,9 @@ async def list_code_examples() -> list[str]:
 @mcp.resource("code://get-example/{slug}")
 async def get_code_example(slug: str) -> str | None:
     return next((e for e in code_examples if e.slug == slug), None)
+
+def main():
+    mcp.run()
+
+if __name__ == "__main__":
+    main()
