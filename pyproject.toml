@@ -17,5 +17,10 @@ email = "andrey@geldata.com"
 requires = [ "hatchling",]
 build-backend = "hatchling.build"
 
+[dependency-groups]
+dev = [
+    "notebook>=7.3.2",
+]
+
 [project.scripts]
 gel-mcp = "gel_mcp:main"
