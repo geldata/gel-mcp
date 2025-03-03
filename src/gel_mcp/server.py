@@ -1,176 +1,21 @@
-from mcp.server.models import InitializationOptions
-import mcp.types as types
-from mcp.server import NotificationOptions, Server
-from pydantic import AnyUrl
-import mcp.server.stdio
+from mcp.server import FastMCP
+from pathlib import Path
 
-import gel
-from jinja2 import Template
-import json
-
-transaction_options = gel.TransactionOptions(readonly=False)
-gel_client = gel.create_async_client().with_transaction_options(
-    transaction_options
-)
+from gel_mcp.common.types import CodeExample
 
 
-server = Server("gel-mcp")
+mcp = FastMCP("gel-mcp")
 
 
-@server.list_resources()
-async def handle_list_resources() -> list[types.Resource]:
-    """
-    List available schema resources.
-    Those include the default module and all of the object types within it.
-    Resouces are exposed via custom URIs like module://default and type:://default/Product.
-    """
-
-    async for tx in gel_client.transaction():
-        async with tx:
-            db_types = await tx.query_json(
-                """
-                with module schema,
-                    types := (
-                        select ObjectType { name }
-                        filter .name like 'default::%'
-                        )
-                select types.name;
-                """
-            )
-
-    module_resources = [
-        types.Resource(
-            uri=AnyUrl("module://default"),
-            name="Module: default",
-            description="Schema for the entire default module",
-            mimeType="application/json",
-        )
-    ]
-
-    type_resources = [
-        types.Resource(
-            uri=AnyUrl(f"type://{db_type.replace('::', '/')}"),
-            name=f"Type: {db_type}",
-            description=f"Schema for {db_type} type",
-            mimeType="application/json",
-        )
-        for db_type in json.loads(db_types)
-    ]
-
-    return module_resources + type_resources
+with (Path(__file__).parent / ("code_examples.jsonl")).open("r") as f:
+    code_examples = [CodeExample.model_validate_json(line) for line in f]
 
 
-@server.read_resource()
-async def handle_read_resource(uri: AnyUrl) -> str:
-    """
-    Introspect the default module or a particular type given its URI.
-    """
-
-    if uri.scheme == "module":
-        query = """
-            describe module default as sdl;
-        """
-
-    elif uri.scheme == "type":
-        db_type = uri.path
-        db_type = db_type.lstrip("/")
-
-        query = Template("""
-            select (introspect {{ type }}) {
-              name,
-              properties: {
-                name,
-                target: {
-                  name
-                }
-              },
-              links: {
-                name,
-                target: {
-                  name
-                }
-              }
-            };
-        """).render({"type": db_type})
-    else:
-        raise ValueError(f"Unsupported URI scheme: {uri.scheme}")
-
-    async for tx in gel_client.transaction():
-        async with tx:
-            schema = await tx.query_json(query)
-
-    return schema
+@mcp.resource("code://list-examples")
+async def list_code_examples() -> list[str]:
+    return [f"{e.slug}: {e.description}" for e in code_examples]
 
 
-@server.list_tools()
-async def handle_list_tools() -> list[types.Tool]:
-    """
-    List available tools.
-    Each tool specifies its arguments using JSON Schema validation.
-    """
-
-    return [
-        types.Tool(
-            name="query",
-            description="Run a read-only EdgeQL query",
-            inputSchema={
-                "type": "object",
-                "properties": {
-                    "edgeql": {"type": "string"},
-                },
-                "required": ["edgeql"],
-            },
-        )
-    ]
-
-
-@server.call_tool()
-async def handle_call_tool(
-    name: str, arguments: dict | None
-) -> list[types.TextContent | types.ImageContent | types.EmbeddedResource]:
-    """
-    Handle tool execution requests.
-    Tools can modify server state and notify clients of changes.
-    """
-
-    if name != "query":
-        raise ValueError(f"Unknown tool: {name}")
-
-    if not arguments:
-        raise ValueError("Missing arguments")
-
-    edgeql_query = arguments.get("edgeql")
-
-    if not edgeql_query:
-        raise ValueError("Missing EdgeQL query")
-
-    async for tx in gel_client.transaction():
-        async with tx:
-            response = await tx.query_json(edgeql_query)
-
-    # Notify clients that resources have changed
-    await server.request_context.session.send_resource_list_changed()
-
-    return [
-        types.TextContent(
-            type="text",
-            text=f"{json.dumps(response)}",
-        )
-    ]
-
-
-async def main():
-    # Run the server using stdin/stdout streams
-    async with mcp.server.stdio.stdio_server() as (read_stream, write_stream):
-        await server.run(
-            read_stream,
-            write_stream,
-            InitializationOptions(
-                server_name="gel-mcp",
-                server_version="0.1.0",
-                capabilities=server.get_capabilities(
-                    notification_options=NotificationOptions(),
-                    experimental_capabilities={},
-                ),
-            ),
-        )
+@mcp.resource("code://get-example/{slug}")
+async def get_code_example(slug: str) -> str | None:
+    return next((e for e in code_examples if e.slug == slug), None)
