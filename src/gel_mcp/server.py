@@ -6,7 +6,7 @@ from gel_mcp.common.types import CodeExample
 
 
 mcp = FastMCP("gel-mcp")
-gel_client = gel.create_client()
+gel_client = gel.create_async_client()
 
 
 with (Path(__file__).parent / ("code_examples.jsonl")).open("r") as f:
@@ -34,7 +34,7 @@ async def introspect_schema() -> str:
 @mcp.tool("query://analyze")
 async def analyze_query(query: str) -> str:
     """Analyze a query to check for potential issues"""
-    return await gel_client.query("analyze $query", query=query)
+    return await gel_client.query("analyze <str>$gel_query", gel_query=query)
 
 
 @mcp.tool("query://execute")
