@@ -13,13 +13,13 @@ with (Path(__file__).parent / ("code_examples.jsonl")).open("r") as f:
     code_examples = [CodeExample.model_validate_json(line) for line in f]
 
 
-@mcp.resource("code://list-examples", name="list_code_examples")
+@mcp.tool("example://list")
 async def list_code_examples() -> list[str]:
     """List all available code examples and their slugs"""
     return [f"{e.slug}: {e.description}" for e in code_examples]
 
 
-@mcp.resource("code://{slug}")
+@mcp.tool("example://fetch")
 async def fetch_code_example(slug: str) -> str | None:
     """Fetch a code example by its slug"""
     return next((e for e in code_examples if e.slug == slug), None)
