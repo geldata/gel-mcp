@@ -1,0 +1,101 @@
+---
+description: Working with Gel database
+globs: *.gel,*.edgeql,*.py
+alwaysApply: false
+---
+
+# Working with Gel (ex EdgeDB)
+
+## Important General Information
+
+- Gel is the rebranded version of EdgeDB. All EdgeDB documentation, resources, and syntax apply to Gel.
+- **ALWAYS consult the Gel MCP server** for tools, resources, and code examples when working with Gel database tasks.
+- If operations fail, carefully review the examples in the MCP server again, as function names and specific syntax may have been forgotten.
+- For official documentation, refer to docs.geldata.com.
+
+## Core Concepts
+
+### Migrations
+
+Gel comes with its own migration system. Each time you modify the schema, make sure to run the following commands:
+
+```sh
+gel migration create --non-interactive
+gel migrate
+```
+
+### Schema 
+
+```sdl
+type BlogPost {
+  title: str;
+  author: User;
+}
+
+type User {
+  name: str;
+  multi blog_posts := .<author[is BlogPost]
+}
+```
+
+### Query Language (EdgeQL)
+
+Use `select` for retrieving data, `insert` for creating, `update` for modifying, and `delete` for removing data.
+Use shape expressions ({ ... }) to specify which properties to include in the result.
+
+#### Basic Queries
+
+```edgeql
+# Simple selection
+select User {
+  name,
+  email,
+  posts: {
+    title
+  }
+};
+
+# Filtering
+select User filter .name = 'Alice';
+
+# Ordering
+select User order by .name asc;
+
+# Limiting
+select User limit 10;
+```
+
+#### Mutations
+
+```edgeql
+# Insert a new user
+insert User {
+  name := 'Alice',
+  email := 'alice@example.com'
+};
+
+# Update a user
+update User 
+filter .id = <uuid>'...'
+set {
+  name := 'Alice Smith'
+};
+
+# Delete a user
+delete User filter .id = <uuid>'...';
+```
+
+## Troubleshooting Guide
+
+1. If a query fails, double-check syntax and type constraints.
+2. Verify that property and type names match schema definitions exactly.
+3. Check for missing required properties in insert operations.
+4. Remember that Gel doesn't use NULL values, use exists or ?= operators instead.
+5. When in doubt, refer to examples in the MCP server or the official documentation at docs.geldata.com.
+
+## Best Practices
+
+1. Follow a consistent naming convention (camelCase or snake_case).
+2. Add comments to explain complex queries or schema definitions.
+3. Use abstract types and inheritance for shared behavior.
+4. Leverage computeds to simplify queries. 
