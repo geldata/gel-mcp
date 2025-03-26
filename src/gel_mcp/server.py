@@ -1,7 +1,7 @@
 from mcp.server import FastMCP
 from pathlib import Path
 import gel
-import os
+import argparse
 
 from gel_mcp.common.types import MCPExample
 
@@ -10,10 +10,16 @@ mcp = FastMCP("gel-mcp")
 gel_client = gel.create_async_client()
 
 
-if os.environ.get("GEL_MCP_WORKFLOWS_PATH"):
+parser = argparse.ArgumentParser()
+parser.add_argument(
+    "--workflows-file", type=Path, required=False, help="Path to workflows.jsonl"
+)
+args = parser.parse_args()
+
+if args.workflows_file:
     from gel_mcp.import_from_workflows import import_from_workflows
 
-    mcp_examples = import_from_workflows()
+    mcp_examples = import_from_workflows(args.workflows_file)
 else:
     examples_path = Path(__file__).parent / ("mcp_examples.jsonl")
     if not examples_path.exists():

@@ -1,7 +1,7 @@
 npx @modelcontextprotocol/inspector \
-  -e GEL_MCP_WORKFLOWS_PATH=path/to/workflows.jsonl \
-  -- \
-  uv \
-  --directory $(pwd) \
-  run \
+  uvx \
+  --refresh \
+  --directory path/to/project/root \
+  --from git+https://github.com/geldata/gel-mcp \
   gel-mcp \
+  --workflows-file /path/to/workflows.jsonl
