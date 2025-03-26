@@ -1,31 +1,38 @@
 from mcp.server import FastMCP
 from pathlib import Path
 import gel
+import os
 
-from gel_mcp.common.types import CodeExample, WorkflowExample
+from gel_mcp.common.types import MCPExample
 
 
 mcp = FastMCP("gel-mcp")
 gel_client = gel.create_async_client()
 
 
-with (Path(__file__).parent / ("code_examples.jsonl")).open("r") as f:
-    code_examples = [CodeExample.model_validate_json(line) for line in f]
+if os.environ.get("GEL_MCP_WORKFLOWS_PATH"):
+    from gel_mcp.import_from_workflows import import_from_workflows
 
-with (Path(__file__).parent / ("workflow_examples.jsonl")).open("r") as f:
-    workflow_examples = [WorkflowExample.model_validate_json(line) for line in f]
+    mcp_examples = import_from_workflows()
+else:
+    examples_path = Path(__file__).parent / ("mcp_examples.jsonl")
+    if not examples_path.exists():
+        raise FileNotFoundError(f"Missing examples file: {examples_path.as_posix()}")
+    mcp_examples = [
+        MCPExample.model_validate_json(line) for line in examples_path.open("r")
+    ]
 
 
 @mcp.tool("example://list")
 async def list_examples() -> list[str]:
     """List all available code and workflow examples and their slugs"""
-    return [f"{e.slug}: {e.description}" for e in code_examples + workflow_examples]
+    return [f"<{e.slug}> {e.name}: {e.description}" for e in mcp_examples]
 
 
 @mcp.tool("example://fetch")
 async def fetch_example(slug: str) -> str | None:
     """Fetch a code or workflow example by its slug"""
-    return next((e for e in code_examples + workflow_examples if e.slug == slug), None)
+    return next((e.to_markdown() for e in mcp_examples if e.slug == slug), None)
 
 
 @mcp.tool("schema://introspect")

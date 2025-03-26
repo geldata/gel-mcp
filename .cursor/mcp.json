@@ -2,10 +2,14 @@
     "mcpServers": {
         "gel": {
             "command": "uvx",
+            "env": {
+                "GEL_MCP_WORKFLOWS_PATH": "path/to/workflows.jsonl", 
+                "GEL_PROJECT_ROOT": "path/to/project/root"
+            },
             "args": [
                 "--refresh",
                 "--directory",
-                "path/to/project/root",
+                "${GEL_PROJECT_ROOT}",
                 "--from",
                 "git+https://github.com/geldata/gel-mcp.git",
                 "gel-mcp"

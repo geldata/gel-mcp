@@ -1,7 +1,0 @@
-Test ID,Workflow,Test case,Prompt,Depends on,MCP Component,Expected agent behavior,Pass,Notes
-TC1.1,Basics,Write schema,"This is a brand new project bootstrapped with uv and Gel. I would like to use Gel to keep track of Komi-san's friends. Create a minimal schema that has an entity for a friend, that can be used to keep track of things like name, defining trait and relationship to Komi-san as strings.",None,code examples,Request and use basic schema example,,
-TC1.2,Basics,Populate database,Populate the database with characters from the anime.,TC1.1,"code examples, analyze query",Request and use basic insert query example,,
-TC1.3,Basics,Write a query,Write a select query to fetch friends by their name.,TC1.2,"code examples, analyze query","Request and use basic query example, use analyze tool to verify query correctness",,
-TC2.1,Embeddings,Enable and cofigure extension,This is an application for keeping track of Komi-san's friends. I would like you to add vector search to it. Start by enabling and configuring the relevant extension.,None,code examples,"Request and use schema example for the ext::ai, instruct user to set up the API key",,
-TC2.2,Embeddings,Create vectore embedding index,Now add the index to the database.,TC2.1,code examples,Request and use schema example for ext::ai,,
-TC2.3,Embeddings,Write a vector search query using the Python binding,Write a vector search query example in Python.,TC2.2,code examples,Request and use Python code example for vector search query,,
