@@ -41,16 +41,16 @@ async def fetch_example(slug: str) -> str | None:
     return next((e.to_markdown() for e in mcp_examples if e.slug == slug), None)
 
 
-@mcp.tool("schema://introspect")
-async def introspect_schema() -> str:
-    """Introspect the schema of the database configured in the project"""
-    return await gel_client.query("describe module default as sdl;")
+# @mcp.tool("schema://introspect")
+# async def introspect_schema() -> str:
+#     """Introspect the schema of the database configured in the project"""
+#     return await gel_client.query("describe module default as sdl;")
 
 
 @mcp.tool("query://analyze")
 async def analyze_query(query: str) -> str:
     """Analyze a query to check for potential issues"""
-    return await gel_client.query("analyze <str>$gel_query", gel_query=query)
+    return await gel_client.query("analyze " + str(query))
 
 
 @mcp.tool("query://execute")
