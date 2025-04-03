@@ -88,15 +88,12 @@ class MCPExample(Example):
     def to_markdown(self) -> str:
         formatted_code = []
         for code_snippet in self.code:
-            formatted_code.append(
-                f"From {code_snippet.url}\n"
-                if code_snippet.url
-                else ""
-                + MARKDOWN_CODE_SNIPPET_TEMPLATE.format(
-                    language=code_snippet.language,
-                    code=code_snippet.code,
-                )
+            formatted_snippet = f"From {code_snippet.url}\n" if code_snippet.url else ""
+            formatted_snippet += MARKDOWN_CODE_SNIPPET_TEMPLATE.format(
+                language=code_snippet.language,
+                code=code_snippet.code,
             )
+            formatted_code.append(formatted_snippet)
 
         body = self.instructions if self.instructions else ""
         body += "\n".join(formatted_code)
