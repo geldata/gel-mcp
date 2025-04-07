@@ -7,7 +7,6 @@ from gel_mcp.common.types import MCPExample
 
 
 mcp = FastMCP("gel-mcp")
-gel_client = gel.create_async_client()
 
 
 parser = argparse.ArgumentParser()
@@ -50,12 +49,14 @@ async def fetch_example(slug: str) -> str | None:
 @mcp.tool("query://analyze")
 async def analyze_query(query: str) -> str:
     """Analyze a query to check for potential issues"""
+    gel_client = gel.create_async_client()
     return await gel_client.query("analyze " + str(query))
 
 
 @mcp.tool("query://execute")
 async def execute_query(query: str) -> str:
     """Execute a query and return the result"""
+    gel_client = gel.create_async_client()
     return await gel_client.query(query)
 
 
