@@ -19,7 +19,7 @@ It serves code and natural language examples that can be composed together to fo
                 "path/to/project/root",
                 "--from",
                 "git+https://github.com/geldata/gel-mcp.git",
-                "gel-mcp",
+                "gel-mcp"
             ]
         }
     }
