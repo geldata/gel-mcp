@@ -36,7 +36,7 @@ else:
 
 
 if args.add_cursor_rules:
-    source_file = Path(__file__).parent / "docs" / "gel-rules-auto.mdc"
+    source_file = Path(__file__).parent / "static" / "gel-rules-auto.mdc"
     cursor_rules_dir = Path.cwd() / ".cursor" / "rules"
     cursor_rules_dir.mkdir(parents=True, exist_ok=True)
     dest_file = cursor_rules_dir / "gel-rules.mdc"
