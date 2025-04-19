@@ -42,10 +42,8 @@ if args.add_cursor_rules:
     dest_file = cursor_rules_dir / "gel-rules.mdc"
     if source_file.exists():
         shutil.copy2(source_file, dest_file)
-        print(f"Successfully copied Gel rules to {dest_file}")
     else:
-        print(f"Error: Could not find Gel rules file at {source_file}")
-
+        raise FileNotFoundError(f"Missing Gel rules file: {source_file.as_posix()}")
 
 @mcp.tool("example://list")
 async def list_examples() -> list[str]:
