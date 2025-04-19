@@ -2,6 +2,7 @@ from mcp.server import FastMCP
 from pathlib import Path
 import gel
 import argparse
+import shutil
 
 from gel_mcp.common.types import MCPExample
 
@@ -13,6 +14,12 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "--workflows-file", type=Path, required=False, help="Path to workflows.jsonl"
 )
+parser.add_argument(
+    "--add-cursor-rules",
+    action="store_true",
+    help="Add Gel rules into the current project",
+)
+
 args = parser.parse_args()
 
 if args.workflows_file:
@@ -26,6 +33,18 @@ else:
     mcp_examples = [
         MCPExample.model_validate_json(line) for line in examples_path.open("r")
     ]
+
+
+if args.add_cursor_rules:
+    source_file = Path(__file__).parent / "docs" / "gel-rules-auto.mdc"
+    cursor_rules_dir = Path.cwd() / ".cursor" / "rules"
+    cursor_rules_dir.mkdir(parents=True, exist_ok=True)
+    dest_file = cursor_rules_dir / "gel-rules.mdc"
+    if source_file.exists():
+        shutil.copy2(source_file, dest_file)
+        print(f"Successfully copied Gel rules to {dest_file}")
+    else:
+        print(f"Error: Could not find Gel rules file at {source_file}")
 
 
 @mcp.tool("example://list")
