@@ -24,3 +24,6 @@ dev = [
 
 [project.scripts]
 gel-mcp = "gel_mcp:main"
+
+[tool.hatch.build.force-include]
+"src/gel_mcp/static/gel-rules-auto.mdc" = "gel_mcp/static/gel-rules-auto.mdc"
