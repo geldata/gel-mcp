@@ -74,7 +74,7 @@ class MCPExample(Example):
             short_name = name.lower().split(" ")[:5]
             return "-".join(short_name)
 
-        slug = name_to_slug(example.name)
+        slug = example.name and name_to_slug(example.name)
 
         return cls(
             id=example.id,

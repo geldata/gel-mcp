@@ -3,6 +3,7 @@ from pathlib import Path
 import gel
 import argparse
 import shutil
+import asyncio
 
 from gel_mcp.import_from_workflows import import_from_workflows
 
@@ -66,19 +67,21 @@ async def fetch_example(slug: str) -> str | None:
 async def analyze_query(query: str) -> str:
     """Analyze a query to check for potential issues"""
     gel_client = gel.create_async_client()
-    return await gel_client.query("analyze " + str(query))
+    result = await gel_client.query("analyze " + str(query))
+    return str(result)
 
 
 @mcp.tool()
 async def execute_query(query: str) -> str:
     """Execute a query and return the result"""
     gel_client = gel.create_async_client()
-    return await gel_client.query(query)
+    result = await gel_client.query(query)
+    return str(result)
 
 
-def main():
+async def main() -> None:
     mcp.run()
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

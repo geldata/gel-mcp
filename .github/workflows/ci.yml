@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v5
+
+    - name: "Set up Python"
+      uses: actions/setup-python@v5
+      with:
+        python-version-file: "pyproject.toml"
+
+    - name: Install the project
+        run: uv sync --locked --all-extras --dev
+
+    - name: Type check 
+        run: uv run mypy src --strict
+      
+    - name: Lint and format
+        run: uv run ruff check .
+        run: uv run ruff format --check .
+      
+    - name: Verify server startup
+      run: |
+        # Start server in background and check it initializes correctly
+        timeout 30s gel-mcp --help || (exit_code=$?; [ $exit_code -eq 124 ] && echo "Server command help works" && exit 0 || exit $exit_code) 

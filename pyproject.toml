@@ -19,11 +19,16 @@ build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = [
-    "notebook>=7.3.2",
+    "mypy>=1.15.0",
+    "pytest>=8.3.5",
+    "ruff>=0.11.10",
 ]
 
 [project.scripts]
 gel-mcp = "gel_mcp:main"
+lint = "ruff check --fix"
+format = "ruff format"
+check = "mypy src"
 
 [tool.hatch.build.force-include]
 "src/gel_mcp/static/gel-rules-auto.mdc" = "gel_mcp/static/gel-rules-auto.mdc"
