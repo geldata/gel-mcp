@@ -45,13 +45,13 @@ if args.add_cursor_rules:
     else:
         raise FileNotFoundError(f"Missing Gel rules file: {source_file.as_posix()}")
 
-@mcp.tool("example://list")
+@mcp.tool()
 async def list_examples() -> list[str]:
     """List all available code and workflow examples and their slugs"""
     return [f"<{e.slug}> {e.name}: {e.description}" for e in mcp_examples]
 
 
-@mcp.tool("example://fetch")
+@mcp.tool()
 async def fetch_example(slug: str) -> str | None:
     """Fetch a code or workflow example by its slug"""
     return next((e.to_markdown() for e in mcp_examples if e.slug == slug), None)
@@ -63,14 +63,14 @@ async def fetch_example(slug: str) -> str | None:
 #     return await gel_client.query("describe module default as sdl;")
 
 
-@mcp.tool("query://analyze")
+@mcp.tool()
 async def analyze_query(query: str) -> str:
     """Analyze a query to check for potential issues"""
     gel_client = gel.create_async_client()
     return await gel_client.query("analyze " + str(query))
 
 
-@mcp.tool("query://execute")
+@mcp.tool()
 async def execute_query(query: str) -> str:
     """Execute a query and return the result"""
     gel_client = gel.create_async_client()
