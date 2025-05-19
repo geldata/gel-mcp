@@ -4,7 +4,7 @@ import gel
 import argparse
 import shutil
 
-from gel_mcp.common.types import MCPExample
+from gel_mcp.import_from_workflows import import_from_workflows
 
 
 mcp = FastMCP("gel-mcp")
@@ -23,16 +23,14 @@ parser.add_argument(
 args = parser.parse_args()
 
 if args.workflows_file:
-    from gel_mcp.import_from_workflows import import_from_workflows
-
     mcp_examples = import_from_workflows(args.workflows_file)
 else:
-    examples_path = Path(__file__).parent / ("mcp_examples.jsonl")
-    if not examples_path.exists():
-        raise FileNotFoundError(f"Missing examples file: {examples_path.as_posix()}")
-    mcp_examples = [
-        MCPExample.model_validate_json(line) for line in examples_path.open("r")
-    ]
+    workflows_path = Path(__file__).parent / "static" / "workflows.jsonl"
+    if not workflows_path.exists():
+        raise FileNotFoundError(
+            f"Missing default workflows file: {workflows_path.as_posix()}"
+        )
+    mcp_examples = import_from_workflows(workflows_path)
 
 
 if args.add_cursor_rules:
@@ -44,6 +42,7 @@ if args.add_cursor_rules:
         shutil.copy2(source_file, dest_file)
     else:
         raise FileNotFoundError(f"Missing Gel rules file: {source_file.as_posix()}")
+
 
 @mcp.tool()
 async def list_examples() -> list[str]:
