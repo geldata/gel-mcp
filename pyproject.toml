@@ -13,6 +13,9 @@ dependencies = [
 name = "anbuzin"
 email = "andrey@geldata.com"
 
+[project.scripts]
+gel-mcp = "gel_mcp:main"
+
 [build-system]
 requires = [ "hatchling",]
 build-backend = "hatchling.build"
@@ -23,12 +26,6 @@ dev = [
     "pytest>=8.3.5",
     "ruff>=0.11.10",
 ]
-
-[project.scripts]
-gel-mcp = "gel_mcp:main"
-lint = "ruff check --fix"
-format = "ruff format"
-check = "mypy src"
 
 [tool.hatch.build.force-include]
 "src/gel_mcp/static/gel-rules-auto.mdc" = "gel_mcp/static/gel-rules-auto.mdc"
