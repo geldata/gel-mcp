@@ -25,14 +25,13 @@ jobs:
         python-version-file: "pyproject.toml"
 
     - name: Install the project
-        run: uv sync --locked --all-extras --dev
+      run: uv sync --locked --all-extras --dev
 
     - name: Type check 
-        run: uv run mypy src --strict
+      run: uv run mypy src --strict
       
     - name: Lint and format
-        run: uv run ruff check .
-        run: uv run ruff format --check .
+      run: uv run ruff check . && uv run ruff format --check .
       
     - name: Verify server startup
       run: |
