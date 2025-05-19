@@ -11,7 +11,6 @@ permissions:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -20,7 +19,7 @@ jobs:
     - name: Install uv
       uses: astral-sh/setup-uv@v5
 
-    - name: "Set up Python"
+    - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version-file: "pyproject.toml"
@@ -37,5 +36,4 @@ jobs:
       
     - name: Verify server startup
       run: |
-        # Start server in background and check it initializes correctly
-        timeout 30s gel-mcp --help || (exit_code=$?; [ $exit_code -eq 124 ] && echo "Server command help works" && exit 0 || exit $exit_code) 
+        timeout 30s uv run gel-mcp --help || (exit_code=$?; [ $exit_code -eq 124 ] && echo "Server command help works" && exit 0 || exit $exit_code) 
