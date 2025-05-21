@@ -1,12 +1,3 @@
-from . import server
-import asyncio
+from .server import main
 
-
-def main() -> None:
-    """Main entry point for the package."""
-    asyncio.run(server.main())
-    return None
-
-
-# Optionally expose other important items at package level
-__all__ = ["main", "server"]
+__all__ = ["main"]

@@ -1,9 +1,9 @@
+import asyncio
 from mcp.server import FastMCP
 from pathlib import Path
 import gel
 import argparse
 import shutil
-import asyncio
 
 from gel_mcp.import_from_workflows import import_from_workflows
 
@@ -57,12 +57,6 @@ async def fetch_example(slug: str) -> str | None:
     return next((e.to_markdown() for e in mcp_examples if e.slug == slug), None)
 
 
-# @mcp.tool("schema://introspect")
-# async def introspect_schema() -> str:
-#     """Introspect the schema of the database configured in the project"""
-#     return await gel_client.query("describe module default as sdl;")
-
-
 @mcp.tool()
 async def analyze_query(query: str) -> str:
     """Analyze a query to check for potential issues"""
@@ -79,9 +73,9 @@ async def execute_query(query: str) -> str:
     return str(result)
 
 
-async def main() -> None:
+def main() -> None:
     mcp.run()
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    main()
