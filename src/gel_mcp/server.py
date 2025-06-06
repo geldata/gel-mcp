@@ -76,6 +76,43 @@ async def execute_query(query: str, arguments: dict = None) -> dict:
     return json.loads(result)
 
 
+@mcp.tool()
+async def try_query(query: str, arguments: dict = None) -> dict:
+    """Execute a query in a transaction that gets rolled back, allowing you to test queries without making permanent changes
+    
+    Args:
+        query: The EdgeQL query to execute
+        arguments: Optional dictionary of query parameters to pass to the query
+    
+    Returns:
+        Dictionary containing the query result in JSON format (changes are not persisted)
+    """
+    gel_client = gel.create_async_client()
+    
+    result = None
+    
+    # Use a custom exception to force rollback while preserving the result
+    class IntentionalRollback(Exception):
+        pass
+    
+    try:
+        async for tx in gel_client.transaction():
+            async with tx:
+                if arguments:
+                    result = await tx.query_json(query, **arguments)
+                else:
+                    result = await tx.query_json(query)
+                
+                # Force a rollback by raising an exception after getting the result
+                # This ensures the transaction is always rolled back
+                raise IntentionalRollback("Intentional rollback for try_query")
+    except IntentionalRollback:
+        # This is expected - we intentionally caused a rollback
+        pass
+    
+    return json.loads(result)
+
+
 def main() -> None:
     mcp.run()
 
