@@ -3,6 +3,7 @@ from pathlib import Path
 import gel
 import argparse
 import shutil
+import json
 
 from gel_mcp.import_from_workflows import import_from_workflows
 
@@ -57,19 +58,22 @@ async def fetch_example(slug: str) -> str | None:
 
 
 @mcp.tool()
-async def analyze_query(query: str) -> str:
-    """Analyze a query to check for potential issues"""
+async def execute_query(query: str, arguments: dict = None) -> dict:
+    """Execute a query and return the result as JSON
+    
+    Args:
+        query: The EdgeQL query to execute
+        arguments: Optional dictionary of query parameters to pass to the query
+    
+    Returns:
+        Dictionary containing the query result in JSON format
+    """
     gel_client = gel.create_async_client()
-    result = await gel_client.query("analyze " + str(query))
-    return str(result)
-
-
-@mcp.tool()
-async def execute_query(query: str) -> str:
-    """Execute a query and return the result"""
-    gel_client = gel.create_async_client()
-    result = await gel_client.query(query)
-    return str(result)
+    if arguments:
+        result = await gel_client.query_json(query, **arguments)
+    else:
+        result = await gel_client.query_json(query)
+    return json.loads(result)
 
 
 def main() -> None:
