@@ -1,5 +1,4 @@
-import asyncio
-from mcp.server import FastMCP
+from mcp.server.fastmcp import FastMCP
 from pathlib import Path
 import gel
 import argparse
