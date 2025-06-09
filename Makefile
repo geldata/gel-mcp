@@ -1,4 +1,4 @@
-.PHONY: lint format check
+.PHONY: lint format check test
 
 lint:
 	ruff check --fix .
@@ -9,4 +9,7 @@ format:
 check:
 	mypy src --strict
 
-all: lint format check 
+test:
+	pytest tests/ -v
+
+all: lint format check test 

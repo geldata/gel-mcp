@@ -24,9 +24,14 @@ build-backend = "hatchling.build"
 dev = [
     "mypy>=1.15.0",
     "pytest>=8.3.5",
+    "pytest-asyncio>=0.24.0",
     "ruff>=0.11.10",
 ]
 
 [tool.hatch.build.force-include]
 "src/gel_mcp/static/gel-rules-auto.mdc" = "gel_mcp/static/gel-rules-auto.mdc"
 "src/gel_mcp/static/workflows.jsonl" = "gel_mcp/static/workflows.jsonl"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+filterwarnings = ["ignore::DeprecationWarning"]

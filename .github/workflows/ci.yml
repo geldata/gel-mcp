@@ -32,6 +32,9 @@ jobs:
       
     - name: Lint and format
       run: uv run ruff check . && uv run ruff format --check .
+
+    - name: Run tests
+      run: uv run pytest 
       
     - name: Verify server startup
       run: |
