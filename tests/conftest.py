@@ -1,7 +1,6 @@
 """Test configuration and fixtures for gel-mcp tests."""
 
 import json
-from unittest.mock import AsyncMock, patch
 import pytest
 
 from gel_mcp.common.types import MCPExample, CodeSnippet
@@ -79,24 +78,3 @@ def workflows_file(tmp_path, mcp_example):
         f.write(json.dumps(workflow_data) + "\n")
 
     return workflows_file
-
-
-@pytest.fixture
-def mock_gel_client():
-    """Mock gel.create_async_client for database tests."""
-    mock_client = AsyncMock()
-    mock_client.query_json = AsyncMock(return_value='{"result": "test_data"}')
-
-    # Mock transaction for try_query
-    mock_tx = AsyncMock()
-    mock_tx.query_json = AsyncMock(return_value='{"result": "test_data"}')
-    mock_tx.__aenter__ = AsyncMock(return_value=mock_tx)
-    mock_tx.__aexit__ = AsyncMock(return_value=None)
-
-    async def mock_transaction():
-        yield mock_tx
-
-    mock_client.transaction = mock_transaction
-
-    with patch("gel.create_async_client", return_value=mock_client):
-        yield mock_client

@@ -9,8 +9,8 @@ from gel_mcp.import_from_workflows import import_from_workflows
 from gel_mcp.common.types import MCPExample
 
 
-def test_import_from_existing_workflows_file(workflows_file):
-    """Test importing from an existing workflows file."""
+def test_import_workflows_basic_functionality(workflows_file):
+    """Test importing from existing workflows file with basic validation."""
     examples = import_from_workflows(workflows_file)
 
     assert len(examples) == 1
@@ -19,17 +19,10 @@ def test_import_from_existing_workflows_file(workflows_file):
     assert examples[0].slug == "test-example"
 
 
-def test_import_from_nonexistent_file(tmp_path):
-    """Test importing from a nonexistent file raises FileNotFoundError."""
-    nonexistent_file = tmp_path / "nonexistent.jsonl"
-
-    with pytest.raises(FileNotFoundError, match="Workflows file not found"):
-        import_from_workflows(nonexistent_file)
-
-
-def test_import_multiple_workflows(tmp_path):
-    """Test importing from a file with multiple workflows."""
-    workflows_file = tmp_path / "multi_workflows.jsonl"
+def test_import_multiple_workflows_and_empty_workflows(tmp_path):
+    """Test importing from files with multiple workflows and empty workflows."""
+    # Test multiple workflows
+    multi_workflows_file = tmp_path / "multi_workflows.jsonl"
 
     workflow1 = {
         "id": "workflow-1",
@@ -61,47 +54,47 @@ def test_import_multiple_workflows(tmp_path):
         ],
     }
 
-    with workflows_file.open("w") as f:
+    with multi_workflows_file.open("w") as f:
         f.write(json.dumps(workflow1) + "\n")
         f.write(json.dumps(workflow2) + "\n")
 
-    examples = import_from_workflows(workflows_file)
-
+    examples = import_from_workflows(multi_workflows_file)
     assert len(examples) == 2
     assert all(isinstance(ex, MCPExample) for ex in examples)
     assert examples[0].name == "First Example"
     assert examples[1].name == "Second Example"
 
-
-def test_import_workflow_with_no_examples(tmp_path):
-    """Test importing from a workflow with no examples."""
-    workflows_file = tmp_path / "no_examples.jsonl"
-
-    workflow = {
+    # Test empty workflows
+    empty_workflows_file = tmp_path / "empty_workflows.jsonl"
+    empty_workflow = {
         "id": "workflow-1",
         "name": "Empty Workflow",
         "tests": [],
         "examples": [],
     }
 
-    with workflows_file.open("w") as f:
-        f.write(json.dumps(workflow) + "\n")
+    with empty_workflows_file.open("w") as f:
+        f.write(json.dumps(empty_workflow) + "\n")
 
-    examples = import_from_workflows(workflows_file)
+    empty_examples = import_from_workflows(empty_workflows_file)
+    assert len(empty_examples) == 0
+    assert empty_examples == []
 
-    assert len(examples) == 0
-    assert examples == []
 
+def test_import_error_cases(tmp_path):
+    """Test error handling for nonexistent files and malformed JSON."""
+    # Test nonexistent file
+    nonexistent_file = tmp_path / "nonexistent.jsonl"
+    with pytest.raises(FileNotFoundError, match="Workflows file not found"):
+        import_from_workflows(nonexistent_file)
 
-def test_import_malformed_json(tmp_path):
-    """Test importing from a file with malformed JSON."""
-    workflows_file = tmp_path / "malformed.jsonl"
-
-    with workflows_file.open("w") as f:
+    # Test malformed JSON
+    malformed_file = tmp_path / "malformed.jsonl"
+    with malformed_file.open("w") as f:
         f.write('{"invalid": json content}\n')
 
     with pytest.raises(ValidationError):
-        import_from_workflows(workflows_file)
+        import_from_workflows(malformed_file)
 
 
 def test_default_workflows_file_exists():
