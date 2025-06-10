@@ -103,8 +103,8 @@ async def execute_query(
         raise ValueError("Query returned None")
 
     parsed_result = json.loads(result)
-    assert isinstance(parsed_result, dict), (
-        f"Expected dict from query, got {type(parsed_result)}"
+    assert isinstance(parsed_result, list), (
+        f"Expected list from query, got {type(parsed_result)}"
     )
     return parsed_result
 
@@ -149,8 +149,8 @@ async def try_query(
         raise ValueError("Query returned None")
 
     parsed_result = json.loads(result)
-    assert isinstance(parsed_result, dict), (
-        f"Expected dict from query, got {type(parsed_result)}"
+    assert isinstance(parsed_result, list), (
+        f"Expected list from query, got {type(parsed_result)}"
     )
     return parsed_result
 

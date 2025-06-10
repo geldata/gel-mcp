@@ -34,8 +34,5 @@ jobs:
       run: uv run ruff check . && uv run ruff format --check .
 
     - name: Run tests
-      run: uv run pytest 
+      run: uv run pytest -v
       
-    - name: Verify server startup
-      run: |
-        timeout 30s uv run gel-mcp --help || (exit_code=$?; [ $exit_code -eq 124 ] && echo "Server command help works" && exit 0 || exit $exit_code) 

@@ -1,0 +1,7 @@
+# This is for running tests
+
+module default {
+    type Kek {
+        pek: str;
+    }
+}

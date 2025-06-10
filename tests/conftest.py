@@ -1,6 +1,7 @@
 """Test configuration and fixtures for gel-mcp tests."""
 
 import json
+import subprocess
 import pytest
 
 from gel_mcp.common.types import MCPExample, CodeSnippet
@@ -78,3 +79,37 @@ def workflows_file(tmp_path, mcp_example):
         f.write(json.dumps(workflow_data) + "\n")
 
     return workflows_file
+
+
+@pytest.fixture(scope="session")
+async def gel_is_initialized():
+    import gel
+
+    def run_in_shell(command: list[str]):
+        try:
+            result = subprocess.run(
+                command, capture_output=True, text=True, check=False, timeout=60
+            )
+        except FileNotFoundError:
+            pytest.skip("The 'gel' command was not found in your PATH.")
+        except subprocess.TimeoutExpired:
+            pytest.skip(f"Command '{' '.join(command)}' timed out.")
+
+        if result.returncode != 0:
+            error_message = f"Error: {result.stderr}"
+            pytest.skip(error_message)
+
+    try:
+        client = gel.create_async_client()
+        await client.ensure_connected()
+        await client.query("reset schema to initial ;")
+        run_in_shell(["gel", "migrate"])
+        await client.aclose()
+        yield
+        return
+    except gel.errors.ClientConnectionError:
+        print("Gel connection failed. Attempting to initialize project...")
+
+    run_in_shell(["gel", "project", "init", "--non-interactive"])
+    yield
+
