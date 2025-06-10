@@ -112,4 +112,3 @@ async def gel_is_initialized():
 
     run_in_shell(["gel", "project", "init", "--non-interactive"])
     yield
-

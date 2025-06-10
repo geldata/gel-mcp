@@ -83,7 +83,7 @@ async def fetch_example(slug: str) -> str | None:
 @mcp.tool()
 async def execute_query(
     query: str, arguments: dict[str, Any] | None = None
-) -> dict[str, Any]:
+) -> list[Any]:
     """Execute a query and return the result as JSON
 
     Args:
@@ -91,7 +91,7 @@ async def execute_query(
         arguments: Optional dictionary of query parameters to pass to the query
 
     Returns:
-        Dictionary containing the query result in JSON format
+        List containing the query result in JSON format
     """
     gel_client = gel.create_async_client()
     if arguments:
@@ -110,9 +110,7 @@ async def execute_query(
 
 
 @mcp.tool()
-async def try_query(
-    query: str, arguments: dict[str, Any] | None = None
-) -> dict[str, Any]:
+async def try_query(query: str, arguments: dict[str, Any] | None = None) -> list[Any]:
     """Execute a query in a transaction that gets rolled back, allowing you to test queries without making permanent changes
 
     Args:
@@ -120,7 +118,7 @@ async def try_query(
         arguments: Optional dictionary of query parameters to pass to the query
 
     Returns:
-        Dictionary containing the query result in JSON format (changes are not persisted)
+        List containing the query result in JSON format (changes are not persisted)
     """
     gel_client = gel.create_async_client()
 

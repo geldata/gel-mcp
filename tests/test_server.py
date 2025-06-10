@@ -34,6 +34,7 @@ async def test_examples_functionality(sample_examples):
 @pytest.mark.asyncio
 async def test_execute_query(gel_is_initialized):
     from gel_mcp.server import execute_query
+
     result = await execute_query("select 42")
     assert result == [42]
 
@@ -41,13 +42,16 @@ async def test_execute_query(gel_is_initialized):
 @pytest.mark.asyncio
 async def test_try_query_rolls_back(gel_is_initialized):
     from gel_mcp.server import try_query, execute_query
+
     await try_query("insert Kek { pek := 'test' }")
     result = await execute_query("select Kek { pek }")
     assert result == []
 
+
 @pytest.mark.asyncio
 async def test_execute_query_with_arguments(gel_is_initialized):
     from gel_mcp.server import execute_query
+
     await execute_query("insert Kek { pek := <str>$pek }", {"pek": "test"})
     result = await execute_query("select Kek { pek }")
     assert result == [{"pek": "test"}]
