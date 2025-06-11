@@ -1,6 +1,8 @@
 # This is for running tests
 
 module default {
+    global this_is_a_global: str;
+
     type Kek {
         pek: str;
     }

@@ -47,6 +47,22 @@ async def test_try_query_rolls_back(gel_is_initialized):
     result = await execute_query("select Kek { pek }")
     assert result == []
 
+@pytest.mark.asyncio
+async def test_try_query_with_arguments(gel_is_initialized):
+    from gel_mcp.server import try_query
+
+    result = await try_query("select <str>$pek", {"pek": "test"})
+    assert result == ["test"]
+
+@pytest.mark.asyncio
+async def test_try_query_with_globals(gel_is_initialized):
+    from gel_mcp.server import try_query
+
+    result = await try_query("select global this_is_a_global")
+    assert result == []
+
+    result = await try_query("select global this_is_a_global", globals={"this_is_a_global": "test"})
+    assert result == ["test"]
 
 @pytest.mark.asyncio
 async def test_execute_query_with_arguments(gel_is_initialized):
@@ -56,3 +72,13 @@ async def test_execute_query_with_arguments(gel_is_initialized):
     result = await execute_query("select Kek { pek }")
     assert result == [{"pek": "test"}]
     await execute_query("delete Kek")
+
+@pytest.mark.asyncio
+async def test_execute_query_with_globals(gel_is_initialized):
+    from gel_mcp.server import execute_query
+
+    result = await execute_query("select global this_is_a_global")
+    assert result == []
+
+    result = await execute_query("select global this_is_a_global", globals={"this_is_a_global": "test"})
+    assert result == ["test"]
