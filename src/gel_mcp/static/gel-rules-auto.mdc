@@ -22,12 +22,12 @@ gel project init --non-interactive     # Initialize project
 gel migration create --non-interactive # Create migration
 gel migrate                            # Apply migrations
 gel branch                             # Manage database branches for safe development
-gel query                              # Run a query
+gel query                              # Run a query (no support for args and globals)
 ```
 
 ## MCP server
 
-1. `execute_query`: execute a Gel query **with args** against the current project's instance.
+1. `execute_query`: execute a Gel query **with args and globals** against the current project's instance.
 2. `try_query`: test query in a rolled-back transaction.
 3. `list_examples`: browse code examples for advanced features.
 4. `fetch_example`: get specific example by slug.
@@ -62,7 +62,7 @@ type Post extending Content {
     uppercase_title := str_upper(.title);
     
     index on (.title);
-    index on ((.author, .created_at));
+    index on ((.author, .created_at));  # Note that the argument is a tuple
 }
 
 type Tag {
@@ -243,18 +243,15 @@ type User {
     required name: str;
     required email: str { constraint exclusive; };
     
-    access policy own_records allow all using (.id = global current_user_id);
+    access policy own_records 
+        allow all 
+        using (exists global current_user_id and .id ?= global current_user_id);
 }
 
 type Post {
     required title: str;
     content: str;
     author: User;
-    multi editors: User {
-        # Link properties (queried using @ syntax)
-        added_at: datetime { default := datetime_current(); };
-        role: str;
-    };
     
     # Triggers for validation/logging
     trigger validate_content after insert, update for each do (
@@ -270,6 +267,33 @@ type Post {
     };
     
     access policy author_only allow update, delete using (.author.id = global current_user_id);
+}
+```
+
+```sdl
+# Link properties are always single and optional
+type BlogPost {
+    multi editors: User {
+        added_at: datetime { default := datetime_current(); };
+        role: str;
+    };
+}
+```
+
+```edgeql
+# Inserting with link properties
+insert BlogPost {
+    title := 'Test',
+    editors := (select User filter .name = 'Bob') { 
+        @added_at := datetime_current(), 
+        @role := 'reviewer' 
+    }
+}
+
+# Querying link properties (note the @ syntax)
+select BlogPost {
+    title,
+    editors: { name, @added_at, @role }
 }
 ```
 
