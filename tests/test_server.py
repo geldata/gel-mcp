@@ -16,7 +16,7 @@ async def test_examples_functionality(sample_examples):
     """Test list_examples and fetch_example work correctly with sample data."""
     from gel_mcp.server import list_examples, fetch_example
 
-    with patch("gel_mcp.server._get_mcp_examples", return_value=sample_examples):
+    with patch("gel_mcp.server.fetch_examples", return_value=sample_examples):
         result = await list_examples()
         assert len(result) == 2
         assert result[0] == "<test-example-1> Test Example 1: First test example"
