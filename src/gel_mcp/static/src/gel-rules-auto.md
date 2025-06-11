@@ -57,7 +57,9 @@ type User {
 
 type Post extending Content {
     content: str;
-    author: User;
+    author: User {
+        on target delete delete source;  # Delete post when author is deleted
+    };
     multi tags: Tag;
     uppercase_title := str_upper(.title);
     
