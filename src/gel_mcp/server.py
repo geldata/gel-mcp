@@ -40,18 +40,24 @@ async def fetch_example(slug: str) -> str | None:
 
 @mcp.tool()
 async def execute_query(
-    query: str, arguments: dict[str, Any] | None = None
+    query: str,
+    arguments: dict[str, Any] | None = None,
+    globals: dict[str, Any] | None = None,
 ) -> list[Any]:
     """Execute a query and return the result as JSON
 
     Args:
         query: The EdgeQL query to execute
         arguments: Optional dictionary of query parameters to pass to the query
+        globals: Optional dictionary of global variables to pass to the query
 
     Returns:
         List containing the query result in JSON format
     """
     gel_client = gel.create_async_client()
+    if globals:
+        gel_client = gel_client.with_globals(**globals)
+
     if arguments:
         result = await gel_client.query_json(query, **arguments)
     else:
@@ -68,17 +74,25 @@ async def execute_query(
 
 
 @mcp.tool()
-async def try_query(query: str, arguments: dict[str, Any] | None = None) -> list[Any]:
+async def try_query(
+    query: str,
+    arguments: dict[str, Any] | None = None,
+    globals: dict[str, Any] | None = None,
+) -> list[Any]:
     """Execute a query in a transaction that gets rolled back, allowing you to test queries without making permanent changes
 
     Args:
         query: The EdgeQL query to execute
         arguments: Optional dictionary of query parameters to pass to the query
+        globals: Optional dictionary of global variables to pass to the query
 
     Returns:
         List containing the query result in JSON format (changes are not persisted)
     """
     gel_client = gel.create_async_client()
+
+    if globals:
+        gel_client = gel_client.with_globals(**globals)
 
     result: str | None = None
 
