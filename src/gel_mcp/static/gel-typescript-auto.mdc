@@ -1,5 +1,5 @@
 ---
-description: Working with Gel database
+description: Working with Gel in TypeScript
 globs: 
 alwaysApply: false
 ---
