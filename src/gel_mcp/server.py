@@ -142,16 +142,19 @@ def main() -> None:
         global WORKFLOWS_PATH
         WORKFLOWS_PATH = args.workflows_file
 
-    # Handle cursor rules
     if args.add_cursor_rules:
-        source_file = Path(__file__).parent / "static" / "gel-rules-auto.mdc"
+        static_dir = Path(__file__).parent / "static"
         cursor_rules_dir = Path.cwd() / ".cursor" / "rules"
         cursor_rules_dir.mkdir(parents=True, exist_ok=True)
-        dest_file = cursor_rules_dir / source_file.name
-        if source_file.exists():
+
+        mdc_files = list(static_dir.glob("*.mdc"))
+
+        if not mdc_files:
+            raise FileNotFoundError(f"No .mdc files found in: {static_dir.as_posix()}")
+
+        for source_file in mdc_files:
+            dest_file = cursor_rules_dir / source_file.name
             shutil.copy2(source_file, dest_file)
-        else:
-            raise FileNotFoundError(f"Missing Gel rules file: {source_file.as_posix()}")
     mcp.run()
 
 
