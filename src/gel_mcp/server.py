@@ -2,7 +2,6 @@ from mcp.server.fastmcp import FastMCP
 from pathlib import Path
 import gel
 import argparse
-import shutil
 import json
 from typing import Any
 
@@ -13,6 +12,12 @@ from gel_mcp.common.types import MCPExample
 mcp = FastMCP("gel-mcp")
 
 WORKFLOWS_PATH = Path(__file__).parent / "static" / "workflows.jsonl"
+assert WORKFLOWS_PATH.exists(), "Workflows file does not exist"
+assert WORKFLOWS_PATH.is_file(), "Workflows file is not a file"
+
+RULES_DIR = Path(__file__).parent / "static" / "gel-ai-rules" / "src"
+assert RULES_DIR.exists(), "Rules directory does not exist"
+assert RULES_DIR.is_dir(), "Rules directory is not a directory"
 
 
 def fetch_examples(workflows_path: Path) -> list[MCPExample]:
@@ -125,15 +130,32 @@ async def try_query(
     return parsed_result
 
 
+@mcp.tool()
+async def list_rules() -> list[str]:
+    """
+    List all available rules
+    Rules are Markdown files that contain examples and instructions for AI agents on how to use Gel.
+    They are crucial for correct code generation.
+    """
+    return [rule.name for rule in RULES_DIR.glob("*.md")]
+
+
+@mcp.tool()
+async def fetch_rule(rule_name: str) -> str:
+    """
+    Fetch a rule by its name
+    E.g. gel.md or gel-python.md
+    """
+    rule_path = RULES_DIR / rule_name
+    if not rule_path.exists():
+        raise FileNotFoundError(f"Rule {rule_name} not found")
+    return rule_path.read_text()
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--workflows-file", type=Path, required=False, help="Path to workflows.jsonl"
-    )
-    parser.add_argument(
-        "--add-cursor-rules",
-        action="store_true",
-        help="Add Gel rules into the current project",
     )
 
     args = parser.parse_args()
@@ -142,19 +164,6 @@ def main() -> None:
         global WORKFLOWS_PATH
         WORKFLOWS_PATH = args.workflows_file
 
-    if args.add_cursor_rules:
-        static_dir = Path(__file__).parent / "static"
-        cursor_rules_dir = Path.cwd() / ".cursor" / "rules"
-        cursor_rules_dir.mkdir(parents=True, exist_ok=True)
-
-        mdc_files = list(static_dir.glob("*.mdc"))
-
-        if not mdc_files:
-            raise FileNotFoundError(f"No .mdc files found in: {static_dir.as_posix()}")
-
-        for source_file in mdc_files:
-            dest_file = cursor_rules_dir / source_file.name
-            shutil.copy2(source_file, dest_file)
     mcp.run()
 
 
