@@ -130,6 +130,28 @@ async def try_query(
     return parsed_result
 
 
+@mcp.tool()
+async def list_rules() -> list[str]:
+    """
+    List all available rules
+    Rules are Markdown files that contain examples and instructions for AI agents on how to use Gel.
+    They are crucial for correct code generation.
+    """
+    return [rule.name for rule in RULES_DIR.glob("*.md")]
+
+
+@mcp.tool()
+async def fetch_rule(rule_name: str) -> str:
+    """
+    Fetch a rule by its name
+    E.g. gel.md or gel-python.md
+    """
+    rule_path = RULES_DIR / rule_name
+    if not rule_path.exists():
+        raise FileNotFoundError(f"Rule {rule_name} not found")
+    return rule_path.read_text()
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument(
