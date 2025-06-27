@@ -2,7 +2,6 @@ from mcp.server.fastmcp import FastMCP
 from pathlib import Path
 import gel
 import argparse
-import shutil
 import json
 from typing import Any
 
@@ -130,11 +129,6 @@ def main() -> None:
     parser.add_argument(
         "--workflows-file", type=Path, required=False, help="Path to workflows.jsonl"
     )
-    parser.add_argument(
-        "--add-cursor-rules",
-        action="store_true",
-        help="Add Gel rules into the current project",
-    )
 
     args = parser.parse_args()
 
@@ -142,19 +136,6 @@ def main() -> None:
         global WORKFLOWS_PATH
         WORKFLOWS_PATH = args.workflows_file
 
-    if args.add_cursor_rules:
-        static_dir = Path(__file__).parent / "static"
-        cursor_rules_dir = Path.cwd() / ".cursor" / "rules"
-        cursor_rules_dir.mkdir(parents=True, exist_ok=True)
-
-        mdc_files = list(static_dir.glob("*.mdc"))
-
-        if not mdc_files:
-            raise FileNotFoundError(f"No .mdc files found in: {static_dir.as_posix()}")
-
-        for source_file in mdc_files:
-            dest_file = cursor_rules_dir / source_file.name
-            shutil.copy2(source_file, dest_file)
     mcp.run()
 
 
