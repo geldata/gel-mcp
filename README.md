@@ -15,7 +15,7 @@ If at any point you get lost, refer to [this repository](https://github.com/geld
 
 ### Cursor
 
-Add the following to `.cursor/mcp.json`:
+1. Add the following to `.cursor/mcp.json`:
 
 ```json
 {
@@ -36,6 +36,8 @@ Add the following to `.cursor/mcp.json`:
   }
 }
 ```
+
+2. Open MCP settings, e.g. via Command Palette: `View: Open MCP Settings` and toggle Gel in there.
 
 ### Claude Code
 
