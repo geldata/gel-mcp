@@ -7,20 +7,24 @@ alwaysApply: false
 # Working with Gel in Python
 
 For general information please request a general Gel rules document.
-This one is specifically for the new Python API that leverages Pydantic models.
+This one is specifically for the new Python API.
 
 ## Core Concepts
 
-**Gel Python API** provides typesafe query building through generated Pydantic models. It offers a pythonic way to interact with Gel databases using familiar object-oriented patterns.
-
-## Setup & Code Generation
+**Gel Python API** consists of a query builder and an ORM.
+Both work via generated Pydantic reflections of the schema.
 
 ```bash
-# Generate typesafe Python models from schema
 gel-generate-py models
 ```
 
 This creates a `models` package with Pydantic models corresponding to your schema modules.
+You don't need to go deep into the type hierarchies, only the contents of `default.py` that contain your reflected Pydantic models.
+
+1. Query builder is for building queries in a typesafe way. Use for general querying and bulk ops.
+2. ORM is for managing objects and syncing their state with the database. Use for working with individual objects.
+
+Leverage both components and their mutual integration for maximum code prettiness and typesafety.
 
 ## Database Connection
 
@@ -29,12 +33,14 @@ import gel
 from models import default, std
 
 # Create database client
-db = gel.create_client()
+db = gel.create_async_client()
 ```
 
-## Object Creation & Saving
+**Note**: the Python API works both with sync and async client.
 
-### Simple Object Creation
+
+## ORM: create and save objects
+
 ```python
 # Create individual objects
 alice = default.User(name='Alice')
@@ -42,13 +48,12 @@ billie = default.User(name='Billie')
 cameron = default.User(name='Cameron')
 
 # Save single or multiple objects
-db.save(alice, billie, cameron)
+await db.save(alice, billie, cameron)
 ```
 
-### Nested Object Creation
 ```python
 # Create and save nested structures
-db.save(
+await db.save(
     default.Post(
         title='New here',
         body='Hello',
@@ -62,39 +67,59 @@ db.save(
 )
 ```
 
-## Querying Data
+## QB basics
+
+Use `db.get` to fetch a single object or return default value like `dict.get`.
+Unlike `dict`, `db.get` will throw an error if you don't specify a default and nothing is found.
+
+Use `db.query` for all other querying purposes.
+
+Use `query.__edgeql__[1]` before calling `.get()` or `.query()` to see the generated EdgeQL query for debugging.  
 
 ### Basic Queries
+
 ```python
 # Fetch all objects of a type
 q = default.User
-everyone = db.query(q)
+await everyone = db.query(q)
 
 # Get single object with filter
 q = default.User.filter(name='Alice')
-alice = db.get(q)
+await alice = db.get(q, None)
 
 # Query multiple objects with filter
 q = default.Post.filter(body='Hello')
-posts = db.query(q)
+await posts = db.query(q)
 ```
 
 ### Advanced Filtering
+
 ```python
 # Using lambda functions for complex filters
 q = default.User.filter(
     lambda u: std.len(u.name) > 5
 )
-users = db.query(q)
+await users = db.query(q)
 
 # Following links in filters
 q = default.Post.filter(
     lambda p: p.author.name == 'Alice'
 )
-posts = db.query(q)
+await posts = db.query(q)
 ```
 
-### Field Selection
+### Shapes
+
+You specify what properties to fetch by using:
+
+```python
+Type.select(
+    prop_1=True,  # fetch prop_1
+    prop_3=True   # fetch prop_3
+)
+# No other props will be fetched.
+```
+
 ```python
 # Include all fields and specific links
 q = default.Post.select(
@@ -103,7 +128,7 @@ q = default.Post.select(
 ).filter(
     lambda p: p.author.name == 'Alice'
 )
-posts = db.query(q)
+await posts = db.query(q)
 
 # Cherry-pick specific fields
 q = default.Post.select(
@@ -113,7 +138,7 @@ q = default.Post.select(
 ).filter(
     lambda p: p.author.name == 'Alice'
 )
-posts = db.query(q)
+await posts = db.query(q)
 ```
 
 ### Ordering Results
@@ -123,7 +148,7 @@ q = default.Post.select(
     '*',
     author=True,
 ).order_by(created_at=True)
-posts = db.query(q)
+await posts = db.query(q)
 
 # Multiple ordering criteria with direction
 q = default.Post.select(
@@ -133,10 +158,11 @@ q = default.Post.select(
     created_at='desc',
     title='asc',
 )
-posts = db.query(q)
+await posts = db.query(q)
 ```
 
 ### Nested Queries
+
 ```python
 # Nested sub-queries with filtering and ordering
 q = default.User.select(
@@ -146,10 +172,10 @@ q = default.User.select(
         title='asc',
     ),
 ).filter(name='Alice')
-user = db.get(q)
+await user = db.get(q)
 ```
 
-## Updating Data
+## ORM: updating data
 
 ```python
 # Modify existing objects and save changes
@@ -164,7 +190,7 @@ new_post = default.Post(
 )
 
 # Save both updated and new objects
-db.save(posts[0], new_post)
+await db.save(posts[0], new_post)
 ```
 
 ## Key Features Summary
@@ -179,9 +205,9 @@ db.save(posts[0], new_post)
 
 ## Common Patterns
 
-- Always use `db.save()` for persistence (creation and updates)
-- Use `db.get()` for single objects, `db.query()` for multiple objects
-- Chain `.filter()`, `.select()`, `.order_by()` methods for complex queries
+- Use `db.save()` for ORM persistence (creation and updates)
+- Use `db.get()` for QB fetching single objects, `db.query()` for multiple objects
+- Chain `.filter()`, `.select()`, `.order_by()` methods for complex queries, use `.__edgeql__` to verify the query.
 - Use lambda functions for advanced filtering with `std` module functions
 - Leverage object references to maintain relationships between data
 
