@@ -28,10 +28,6 @@ dev = [
     "ruff>=0.11.10",
 ]
 
-[tool.hatch.build.force-include]
-"src/gel_mcp/static/gel-rules-auto.mdc" = "gel_mcp/static/gel-rules-auto.mdc"
-"src/gel_mcp/static/workflows.jsonl" = "gel_mcp/static/workflows.jsonl"
-
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 filterwarnings = ["ignore::DeprecationWarning"]

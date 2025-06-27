@@ -12,6 +12,12 @@ from gel_mcp.common.types import MCPExample
 mcp = FastMCP("gel-mcp")
 
 WORKFLOWS_PATH = Path(__file__).parent / "static" / "workflows.jsonl"
+assert WORKFLOWS_PATH.exists(), "Workflows file does not exist"
+assert WORKFLOWS_PATH.is_file(), "Workflows file is not a file"
+
+RULES_DIR = Path(__file__).parent / "static" / "gel-ai-rules" / "src"
+assert RULES_DIR.exists(), "Rules directory does not exist"
+assert RULES_DIR.is_dir(), "Rules directory is not a directory"
 
 
 def fetch_examples(workflows_path: Path) -> list[MCPExample]:
